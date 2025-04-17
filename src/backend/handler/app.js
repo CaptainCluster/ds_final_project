@@ -66,7 +66,7 @@ async function requestData(data, res) {
         res.status(200).send({
             "type": "response_result",
             "data": {
-                "result": "success",
+                "success": true,
                 "data": dbData
             }
         });
@@ -105,7 +105,7 @@ async function sendReservation(data, res) {
             res.status(200).send({
                 "type": "response_result",
                 "data": {
-                    "result": "success",
+                    "success": true,
                     "message": "Reservation made successfully."
                 }
             });
@@ -113,7 +113,7 @@ async function sendReservation(data, res) {
             res.status(500).send({
                 "type": "response_result",
                 "data": {
-                    "result": "failure",
+                    "success": false,
                     "message": "Could not make reservation."
                 }
             });
