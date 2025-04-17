@@ -10,7 +10,9 @@ let consultSchema = new mongoose.Schema({
   email: {
     type: String,
   },
-  ///@todo - Add reservations attribute
+  reservations: {
+    type: Array,
+  }
 });
 
 module.exports = mongoose.model("consult", consultSchema);
