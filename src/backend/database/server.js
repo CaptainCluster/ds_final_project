@@ -22,6 +22,10 @@ try {
   console.error("Error initializing server:", error);
 }
 
+app.get("/", (req, res) => {
+  res.send("Server is up");
+});
+
 app.post("/request", async (req, res) => {
   const requestType = req.body.type;
   const requestData = req.body.data;
@@ -73,7 +77,11 @@ app.post("/request", async (req, res) => {
 
       return res.status(200).json({
         result: true,
-        reservation: reservation,
+        reservation: {
+          contractor: contractor.email,
+          startDate: reservation.startDate,
+          endDate: reservation.endDate,
+        },
       });
     } else {
       return res.status(400).json({ error: "Request is of an unknown type." });

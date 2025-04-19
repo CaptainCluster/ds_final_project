@@ -3,20 +3,21 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "npm-run-all --parallel start:database start:handler",
+    "start": "concurrently \"npm run start:database\" \"wait-on http://localhost:3000 && npm run start:handler\"",
     "start:database": "cd database && npm run prod",
     "start:handler": "cd handler && npm run prod",
-    "dev": "npm-run-all --parallel dev:database dev:handler",
+    "dev": "concurrently \"npm run dev:database\" \"wait-on http://localhost:3000 && npm run dev:handler\"",
     "dev:database": "cd database && npm run dev",
     "dev:handler": "cd handler && npm run dev",
-    "install:all": "npm install && npm-run-all --parallel install:database install:handler",
+    "install:all": "npm install && concurrently \"npm run install:database\" \"npm run install:handler\"",
     "install:database": "cd database && npm install",
     "install:handler": "cd handler && npm install"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "npm-run-all": "^4.1.5"
+  "dependencies": {
+    "concurrently": "^9.1.2",
+    "wait-on": "^8.0.3"
   }
 }
