@@ -9,7 +9,7 @@
     "dev": "npm-run-all --parallel dev:database dev:handler",
     "dev:database": "cd database && npm run dev",
     "dev:handler": "cd handler && npm run dev",
-    "install": "npm install && npm-run-all --parallel install:database install:handler",
+    "install:all": "npm install && npm-run-all --parallel install:database install:handler",
     "install:database": "cd database && npm install",
     "install:handler": "cd handler && npm install"
   },
