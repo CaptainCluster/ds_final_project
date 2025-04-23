@@ -2,14 +2,17 @@ const express = require('express');
 const cors = require("cors");
 const app = express();
 const port = 8000;
-const dbPort = 5173;
-const dbURL = "http://localhost:" + dbPort;
+
+import requestData from '../utils/requestData';
+import sendErrorResponse from '../utils/sendErrorResponse';
+import sendReservation from '../utils/sendReservation';
 
 // CORS initialization
 app.use(cors())
 
 // Middleware to make parsing JSON requests easy
 app.use(express.json())
+
 
 /**
  * A route that helps understand whether the server
@@ -49,102 +52,3 @@ app.listen(port, () => {
   console.log(`Requesthandler listening on port ${port}`)
 })
 
-//////////////////////////////////////////////////////////////
-// ---------------- Some helpful functions ---------------- //
-//////////////////////////////////////////////////////////////
-
-// ---------------- Request data from database ---------------- //
-
-async function requestData(data, res) {
-    console.log("Sending request for contractor data...")
-    try {
-        const response = await fetch(dbURL + "/request", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "type": "db_request",
-                "data": {
-                    "contractorEmail": data.contractorEmail
-                }
-            })
-        });
-
-        // Wait for response data and parse it as json
-        const dbData = await response.json();
-
-        // Send the received data back to the client
-        res.status(200).send({
-            "type": "response_result",
-            "data": {
-                "success": true,
-                "data": dbData
-            }
-        });
-    } catch (error) {
-        console.log("Error contacting DB server:", error);
-        sendErrorResponse(res, "Failed to fetch data from the database.");
-        return
-    }
-}
-
-// ---------------- Sending reservation to database ---------------- //
-
-async function sendReservation(data, res) {
-    console.log("Sending reservation...")
-
-    try {
-        let response = await fetch(dbURL + "/reserve", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "type": "db_request",
-                "data": {
-                    "contractorEmail": data.contractorEmail,
-                    "startDate": data.startDate,
-                    "endDate": data.endDate
-                }
-            })
-        });
-
-        // Wait for response and parse it as json
-        response = await response.json();
-
-        // Send feedback to client depending on if the reservation is successful or not
-        if(response.data.result) {
-            res.status(200).send({
-                "type": "response_result",
-                "data": {
-                    "success": true,
-                    "message": "Reservation made successfully."
-                }
-            });
-        }else {
-            res.status(500).send({
-                "type": "response_result",
-                "data": {
-                    "success": false,
-                    "message": "Could not make reservation."
-                }
-            });
-        }
-    } catch (error) {
-        console.log("Error contacting DB server:", error);
-        sendErrorResponse(res, "Failed to fetch data from the database.");
-        return
-    }
-}
-
-// ---------------- Sending an error message back to the client ---------------- //
-
-function sendErrorResponse(res, message) {
-    res.status(500).send({
-        "type": "error",
-        "data": {
-            "message": message
-        }
-    });
-}
