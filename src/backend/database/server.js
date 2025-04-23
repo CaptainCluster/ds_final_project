@@ -89,6 +89,7 @@ app.post("/reserve", cors(), async (req, res) => {
     }
 
     const startDate = new Date(requestData.startDate);
+
     if (isNaN(startDate.getTime())) {
       return res.status(400).json({ error: "Invalid reservation date." });
     }
@@ -99,12 +100,24 @@ app.post("/reserve", cors(), async (req, res) => {
       return res.status(400).json({ error: "Invalid reservation time." });
     }
 
-    contractor.reservations[dayIndex][hourIndex].reserved = true;
-    await contractor.save();
+    await Contractor.updateOne(
+      { _id: contractor._id },
+      {
+        $set: {
+          [`reservations.${dayIndex}.${hourIndex}.reserved`]: true,
+        },
+      }
+    );
+
+    // Re fetch the contractor to confirm changes
+    const confirm = await Contractor.findOne({ _id: contractor._id });
 
     return res.status(200).json({
       result: true,
-      contractor: contractor,
+      reservation: {
+        startDate: confirm.reservations[dayIndex][hourIndex].startDate,
+        reserved: confirm.reservations[dayIndex][hourIndex].reserved,
+      },
     });
   } catch (error) {
     console.error("Server error making a reservation:", error);
