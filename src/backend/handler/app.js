@@ -1,7 +1,11 @@
-const express = require('express')
-const app = express()
-const port = 8000
+const express = require('express');
+const app = express();
+const port = 8000;
+const dbPort = 5173;
+const dbURL = "http://localhost:" + dbPort;
 
+// CORS initialization
+app.use(cors())
 
 // Middleware to make parsing JSON requests easy
 app.use(express.json())
@@ -28,13 +32,13 @@ app.post('/request', async (req, res) => {
     }else if(requestType == "send_reservation") {
         sendReservation(data, res)
     }else {
-        sendErrorResponse(res, "Message is of an unknown type.");
+        sendErrorResponse(res, "Request is of an unknown type.");
     }
     return
 })
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`Requesthandler listening on port ${port}`)
 })
 
 //////////////////////////////////////////////////////////////
@@ -46,15 +50,15 @@ app.listen(port, () => {
 async function requestData(data, res) {
     console.log("Sending request for contractor data...")
     try {
-        const response = await fetch("http://localhost:3000/request", {
+        const response = await fetch(dbURL + "/request", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                "type": "request_data",
+                "type": "db_request",
                 "data": {
-                    "contractor": data.contractor
+                    "contractorEmail": data.contractorEmail
                 }
             })
         });
@@ -83,16 +87,17 @@ async function sendReservation(data, res) {
     console.log("Sending reservation...")
 
     try {
-        let response = await fetch("http://localhost:3000/request", {
+        let response = await fetch(dbURL + "/reserve", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                "type": "send_reservation",
+                "type": "db_request",
                 "data": {
-                    "contractor": data.contractor,
-                    "date": data.date
+                    "contractorEmail": data.contractorEmail,
+                    "startDate": data.startDate,
+                    "endDate": data.endDate
                 }
             })
         });
