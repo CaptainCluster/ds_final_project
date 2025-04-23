@@ -1,3 +1,5 @@
+import sendErrorResponse from "./sendErrorResponse.js";
+
 const dbPort = 5173;
 const dbURL = `http://localhost:${dbPort}`;
 
