@@ -11,8 +11,15 @@ app.use(cors())
 // Middleware to make parsing JSON requests easy
 app.use(express.json())
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
+/**
+ * A route that helps understand whether the server
+ * is online.
+ */
+app.get("/test", (req, res) => {
+  res.status(200).json({
+    success: true,
+    msg: "The server is online."
+  });
 })
 
 app.post('/request', async (req, res) => {
