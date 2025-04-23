@@ -3,10 +3,12 @@ import mongoose from "mongoose";
 import Contractor from "./models/Contractor.js";
 import Reservation from "./models/Reservation.js";
 import { mockContractors } from "./mockData.js";
+import cors from "cors"
 
 const app = express();
-const PORT = 3000;
+const PORT = 5173;
 
+app.use(cors())
 app.use(express.json());
 
 try {
@@ -22,8 +24,10 @@ try {
   console.error("Error initializing server:", error);
 }
 
-app.get("/", (req, res) => {
-  res.send("Server is up");
+app.get("/", cors(), (req, res) => {
+  res.status(200).json({
+    msg: "Server is up"
+  });
 });
 
 app.post("/request", async (req, res) => {
