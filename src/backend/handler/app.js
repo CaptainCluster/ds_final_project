@@ -1,14 +1,12 @@
 import express from 'express';
 import cors from "cors";
 
-const app = express();
-const port = 8000;
-
 import requestContractorData from '../utils/requestContractorData.js';
 import sendErrorResponse from '../utils/sendErrorResponse.js';
 import sendReservation from '../utils/sendReservation.js';
 
-
+const app = express();
+const port = 8000;
 
 // CORS initialization
 app.use(cors())
@@ -20,6 +18,8 @@ app.use(express.json())
 /**
  * A route that helps understand whether the server
  * is online.
+ * 
+ * @type GET
  */
 app.get("/test", (req, res) => {
   res.status(200).json({
@@ -28,30 +28,45 @@ app.get("/test", (req, res) => {
   });
 })
 
-app.post('/request', async (req, res) => {
-    // Parse the information from the request
-    const requestType = req.body.type;
+/**
+ * A route for receiving contractor data
+ * 
+ * @type POST
+ */
+app.post("/fetch_data", (req, res) => {
     const data = req.body.data;
-
-    // Send error back to client if request does not contain data
-    if(!data) {
-        console.log("Request does not seem to contain data.")
-        sendErrorResponse(res, "Could not find data in the request.");
-        return
+    if (!data) {
+        res
+            .status(400)
+            .json({
+                success: false,
+                msg: "Could not find needed data within request."
+            })
+        return;
     }
+    requestContractorData(req.body.data, res)
+});
 
-    // Handle task depending on request type
-    if(requestType == "request_data") {
-        requestContractorData(data, res)
-    }else if(requestType == "send_reservation") {
-        sendReservation(data, res)
-    }else {
-        sendErrorResponse(res, "Request is of an unknown type.");
+/**
+ * A route for handling a reservation
+ * 
+ * @type POST
+ */
+app.post("/reserve", (req, res) => {
+    const data = req.body.data;
+    if (!data) {
+        res
+            .status(400)
+            .json({
+                success: false,
+                msg: "Could not find needed data within request."
+            })
+        return;
     }
-    return
-})
+    sendReservation(req.body.data, res);
+});
 
 app.listen(port, () => {
-  console.log(`Requesthandler listening on port ${port}`)
+  console.log(`Request handler listening on port ${port}`)
 })
 
