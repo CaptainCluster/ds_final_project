@@ -1,5 +1,7 @@
 import { Schema, model } from "mongoose";
 
+// Not used at the moment
+
 let reservationSchema = new Schema({
   contractor: {
     type: Schema.Types.ObjectId,

@@ -10,11 +10,7 @@ let contractorSchema = new Schema({
     required: true,
     unique: true,
   },
-  reservations: {
-    type: [Schema.Types.ObjectId],
-    ref: "Reservation",
-    default: [],
-  },
+  reservations: [],
 });
 
 export default model("Contractor", contractorSchema);
