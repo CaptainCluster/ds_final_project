@@ -3,12 +3,12 @@ import mongoose from "mongoose";
 import Contractor from "./models/Contractor.js";
 import Reservation from "./models/Reservation.js";
 import { mockContractors } from "./mockData.js";
-import cors from "cors"
+import cors from "cors";
 
 const app = express();
 const PORT = 5173;
 
-app.use(cors())
+app.use(cors());
 app.use(express.json());
 
 try {
@@ -26,19 +26,32 @@ try {
 
 app.get("/", cors(), (req, res) => {
   res.status(200).json({
-    msg: "Server is up"
+    msg: "Server is up",
   });
 });
 
-app.post("/request", async (req, res) => {
-  const requestType = req.body.type;
-  const requestData = req.body.data;
-
-  if (!requestData || !requestType) {
-    return res.status(400).json({ error: "Invalid request data or type." });
-  }
-
+app.post("/request", cors(), async (req, res) => {
   try {
+    const requestData = req.body.data;
+    const contractor = await Contractor.findOne({
+      email: requestData.contractorEmail,
+    });
+    await contractor.populate("reservations", "startDate endDate");
+    return res.status(200).json({
+      name: contractor.name,
+      email: contractor.email,
+      reservations: contractor.reservations,
+    });
+  } catch (error) {
+    console.error("Server error getting contractors:", error);
+    res.status(500).json({ error: "Error handling request." });
+  }
+});
+
+app.post("/reserve", cors(), async (req, res) => {
+  try {
+    const requestData = req.body.data;
+
     const contractor = await Contractor.findOne({
       email: requestData.contractorEmail,
     });
@@ -47,51 +60,39 @@ app.post("/request", async (req, res) => {
       return res.status(404).json({ error: "Contractor not found." });
     }
 
-    if (requestType === "request_data") {
-      // Populate reservations with the dates and send them back
-      await contractor.populate("reservations", "startDate endDate");
-      return res.status(200).json({
-        name: contractor.name,
-        email: contractor.email,
-        reservations: contractor.reservations,
-      });
-    } else if (requestType === "send_reservation") {
-      // Validate the reservation dates
-      const startDate = new Date(requestData.startDate);
-      const endDate = new Date(requestData.endDate);
+    // Validate the reservation dates
+    const startDate = new Date(requestData.startDate);
+    const endDate = new Date(requestData.endDate);
 
-      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-        return res.status(400).json({ error: "Invalid reservation dates." });
-      }
-
-      if (startDate >= endDate) {
-        return res
-          .status(400)
-          .json({ error: "Reservation end date must be after start date." });
-      }
-
-      // Create the reservation and send it back
-      const reservation = await Reservation.create({
-        contractor: contractor._id,
-        startDate,
-        endDate,
-      });
-      contractor.reservations.push(reservation._id);
-      await contractor.save();
-
-      return res.status(200).json({
-        result: true,
-        reservation: {
-          contractor: contractor.email,
-          startDate: reservation.startDate,
-          endDate: reservation.endDate,
-        },
-      });
-    } else {
-      return res.status(400).json({ error: "Request is of an unknown type." });
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return res.status(400).json({ error: "Invalid reservation dates." });
     }
+
+    if (startDate >= endDate) {
+      return res
+        .status(400)
+        .json({ error: "Reservation end date must be after start date." });
+    }
+
+    // Create the reservation and send it back
+    const reservation = await Reservation.create({
+      contractor: contractor._id,
+      startDate,
+      endDate,
+    });
+    contractor.reservations.push(reservation._id);
+    await contractor.save();
+
+    return res.status(200).json({
+      result: true,
+      reservation: {
+        contractor: contractor.email,
+        startDate: reservation.startDate,
+        endDate: reservation.endDate,
+      },
+    });
   } catch (error) {
-    console.error("Server error:", error);
+    console.error("Server error making a reservation:", error);
     res.status(500).json({ error: "Error handling request." });
   }
 });
