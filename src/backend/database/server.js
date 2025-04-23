@@ -1,7 +1,6 @@
 import express from "express";
 import mongoose from "mongoose";
 import Contractor from "./models/Contractor.js";
-import Reservation from "./models/Reservation.js";
 import { mockContractors } from "./mockData.js";
 import cors from "cors";
 
