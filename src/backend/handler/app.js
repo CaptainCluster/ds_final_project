@@ -34,7 +34,6 @@ app.get("/test", (req, res) => {
  * @type POST
  */
 app.post("/fetch_data", (req, res) => {
-    console.log(req)
     if (!req.body?.data) {
         res
             .status(400)
