@@ -1,11 +1,14 @@
-const express = require('express');
-const cors = require("cors");
+import express from 'express';
+import cors from "cors";
+
 const app = express();
 const port = 8000;
 
-import requestData from '../utils/requestData';
-import sendErrorResponse from '../utils/sendErrorResponse';
-import sendReservation from '../utils/sendReservation';
+import requestContractorData from '../utils/requestContractorData.js';
+import sendErrorResponse from '../utils/sendErrorResponse.js';
+import sendReservation from '../utils/sendReservation.js';
+
+
 
 // CORS initialization
 app.use(cors())
@@ -39,7 +42,7 @@ app.post('/request', async (req, res) => {
 
     // Handle task depending on request type
     if(requestType == "request_data") {
-        requestData(data, res)
+        requestContractorData(data, res)
     }else if(requestType == "send_reservation") {
         sendReservation(data, res)
     }else {

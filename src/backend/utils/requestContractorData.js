@@ -1,4 +1,4 @@
-async function requestData(data, res) {
+async function requestContractorData(data, res) {
     console.log("Sending request for contractor data...")
     try {
         const response = await fetch(dbURL + "/request", {
@@ -32,4 +32,4 @@ async function requestData(data, res) {
     }
 }
 
-export default requestData;
+export default requestContractorData;
