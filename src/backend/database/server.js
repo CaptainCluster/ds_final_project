@@ -15,11 +15,40 @@ try {
   await mongoose.connect("mongodb://127.0.0.1:27017/ds_final_project");
   console.log("MongoDB connected");
 
-  const count = await Contractor.countDocuments();
-  if (count === 0) {
-    await Contractor.insertMany(mockContractors);
-    console.log("Mock data added to the database.");
-  }
+  // Delete existing contractors, should be removed in final version
+  await Contractor.deleteMany({});
+
+  const mockData = mockContractors.map((contractor) => {
+    const monday = new Date(2025, 3, 21); // Hard coded monday, can be changed at some point
+
+    // Create reservation arrays for the next 5 weekdays
+    const reservations = Array(5)
+      .fill()
+      .map((_, dayIndex) => {
+        const day = new Date(monday);
+        day.setDate(monday.getDate() + dayIndex);
+
+        // Create 8 hour slots from 8am to 4pm
+        return Array(8)
+          .fill()
+          .map((_, hourIndex) => {
+            const slotDate = new Date(day);
+            slotDate.setHours(11 + hourIndex, 0, 0, 0); // UTC + 3 because finland
+
+            return {
+              reserved: false,
+              startDate: slotDate,
+            };
+          });
+      });
+
+    return {
+      ...contractor,
+      reservations,
+    };
+  });
+
+  await Contractor.insertMany(mockData);
 } catch (error) {
   console.error("Error initializing server:", error);
 }
@@ -36,7 +65,6 @@ app.post("/request", cors(), async (req, res) => {
     const contractor = await Contractor.findOne({
       email: requestData.contractorEmail,
     });
-    await contractor.populate("reservations", "startDate endDate");
     return res.status(200).json({
       name: contractor.name,
       email: contractor.email,
@@ -60,36 +88,23 @@ app.post("/reserve", cors(), async (req, res) => {
       return res.status(404).json({ error: "Contractor not found." });
     }
 
-    // Validate the reservation dates
     const startDate = new Date(requestData.startDate);
-    const endDate = new Date(requestData.endDate);
-
-    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-      return res.status(400).json({ error: "Invalid reservation dates." });
+    if (isNaN(startDate.getTime())) {
+      return res.status(400).json({ error: "Invalid reservation date." });
     }
 
-    if (startDate >= endDate) {
-      return res
-        .status(400)
-        .json({ error: "Reservation end date must be after start date." });
+    const dayIndex = startDate.getDay() - 1;
+    const hourIndex = startDate.getHours() - 8;
+    if (dayIndex < 0 || dayIndex > 4 || hourIndex < 0 || hourIndex > 7) {
+      return res.status(400).json({ error: "Invalid reservation time." });
     }
 
-    // Create the reservation and send it back
-    const reservation = await Reservation.create({
-      contractor: contractor._id,
-      startDate,
-      endDate,
-    });
-    contractor.reservations.push(reservation._id);
+    contractor.reservations[dayIndex][hourIndex].reserved = true;
     await contractor.save();
 
     return res.status(200).json({
       result: true,
-      reservation: {
-        contractor: contractor.email,
-        startDate: reservation.startDate,
-        endDate: reservation.endDate,
-      },
+      contractor: contractor,
     });
   } catch (error) {
     console.error("Server error making a reservation:", error);
