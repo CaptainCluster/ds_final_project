@@ -1,3 +1,6 @@
+const dbPort = 5173;
+const dbURL = `http://localhost:${dbPort}`;
+
 async function requestContractorData(data, res) {
     console.log("Sending request for contractor data...")
     try {

@@ -34,8 +34,8 @@ app.get("/test", (req, res) => {
  * @type POST
  */
 app.post("/fetch_data", (req, res) => {
-    const data = req.body.data;
-    if (!data) {
+    console.log(req)
+    if (!req.body?.data) {
         res
             .status(400)
             .json({
@@ -53,8 +53,7 @@ app.post("/fetch_data", (req, res) => {
  * @type POST
  */
 app.post("/reserve", (req, res) => {
-    const data = req.body.data;
-    if (!data) {
+    if (!req.body?.data) {
         res
             .status(400)
             .json({
