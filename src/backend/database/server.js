@@ -132,7 +132,7 @@ app.post("/reserve", cors(), async (req, res) => {
     const confirm = await Contractor.findOne({ _id: contractor._id });
 
     return res.status(200).json({
-      result: true,
+      success: true,
       reservation: {
         startDate: confirm.reservations[dayIndex][hourIndex].startDate,
         reserved: confirm.reservations[dayIndex][hourIndex].reserved,
@@ -140,7 +140,10 @@ app.post("/reserve", cors(), async (req, res) => {
     });
   } catch (error) {
     console.error("Server error making a reservation:", error);
-    res.status(500).json({ error: "Error handling request." });
+    res.status(500).json({
+      error: "Error handling request.",
+      success: false
+    });
   }
 });
 

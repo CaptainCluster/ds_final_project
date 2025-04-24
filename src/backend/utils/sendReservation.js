@@ -26,15 +26,17 @@ async function sendReservation(data, res) {
         });
 
         // Wait for response and parse it as json
-        response = await response.json();
+        data = await response.json();
 
         // Send feedback to client depending on if the reservation is successful or not
-        if(response.data.result) {
+        if(data.success) {
             res.status(200).send({
                 "type": "response_result",
                 "data": {
                     "success": true,
-                    "message": "Reservation made successfully."
+                    "message": "Reservation made successfully.",
+                    "startDate": data.reservation.startDate,
+                    "reserved": data.reservation.reserved
                 }
             });
         }else {
