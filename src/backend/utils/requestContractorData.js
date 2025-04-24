@@ -32,7 +32,6 @@ async function requestContractorData(data, res) {
         const dbData = await response.json();
 
         // Send the received data back to the client
-        
         res.status(200).json({
             "type": "response_result",
             "data": {
