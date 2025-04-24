@@ -23,10 +23,11 @@ async function sendReservation(data, res) {
                 }
             })
         });
-
+        
+        // Handling cases where the request failed
         if (response.status != 200) {
           return res.status(response.status).json({
-            "error": `Reservation failed. Status: ${res.status}`
+            "error": `Reservation failed. Status: ${response.status}`
           })
         }
        
