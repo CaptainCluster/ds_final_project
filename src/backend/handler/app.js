@@ -2,7 +2,6 @@ import express from 'express';
 import cors from "cors";
 
 import requestContractorData from '../utils/requestContractorData.js';
-import sendErrorResponse from '../utils/sendErrorResponse.js';
 import sendReservation from '../utils/sendReservation.js';
 
 const app = express();
