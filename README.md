@@ -33,4 +33,4 @@ For each node, run the following:
 > npm run start
 
 The first command installs each of the dependencies. The 
-lower script runs a node. 
+lower one runs a node. 
