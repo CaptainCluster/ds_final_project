@@ -18,34 +18,61 @@ try {
   await Contractor.deleteMany({});
 
   const mockData = mockContractors.map((contractor) => {
-    const monday = new Date(2025, 3, 21); // Hard coded monday, can be changed at some point
 
-    // Create reservation arrays for the next 5 weekdays
-    const reservations = Array(5)
-      .fill()
-      .map((_, dayIndex) => {
-        const day = new Date(monday);
-        day.setDate(monday.getDate() + dayIndex);
+  // Times in UTC + 3 (Finland)
+  const workDayStart = 11;  // 8:00
+  const workDayStop = 19;   // 16:00
+  const maxDays = 5;
+  const currentDate = new Date();
+  currentDate.setHours(currentDate.getHours() + 4)
+  currentDate.setMinutes(0,0,0)
 
-        // Create 8 hour slots from 8am to 4pm
-        return Array(8)
-          .fill()
-          .map((_, hourIndex) => {
-            const slotDate = new Date(day);
-            slotDate.setHours(11 + hourIndex, 0, 0, 0); // UTC + 3 because finland
+  // Slot is one reservation info object (e.g. reserved, startDate)
+  const slots = [];
 
-            return {
-              reserved: false,
-              startDate: slotDate,
-            };
-          });
-      });
+  // Create 8 reservation slots for every working day times the amount of work days wanted
+  while(slots.length < maxDays * 8) {
+    const currentHour = currentDate.getHours();
+    const dayOfWeek = currentDate.getDay();
 
-    return {
-      ...contractor,
-      reservations,
-    };
-  });
+    // If current day is Saturday or Sunday, skip to Monday
+    if(dayOfWeek == 0 || dayOfWeek == 6) {
+      if(dayOfWeek == 6) currentDate.setDate(currentDate.getDate() + 2);
+      if(dayOfWeek == 0) currentDate.setDate(currentDate.getDate() + 1);
+      currentDate.setHours(workDayStart,0,0,0);
+      continue
+    }
+
+    // If current hour is over 16:00 jump forward to 08:00 next day (Times in UTC Finland = +3)
+    if(currentHour > workDayStop - 1) {
+      currentDate.setDate(currentDate.getDate() + 1)
+      currentDate.setHours(workDayStart,0,0,0);
+      continue
+    // Otherwise if we are before 8:00 then just set the time to 8:00 today
+    } else if(currentHour < workDayStart) {
+      currentDate.setHours(workDayStart,0,0,0);
+      continue
+    }
+
+    // After checks create a reservation slot
+      slots.push({
+      reserved: false,
+      startDate: new Date(currentDate) 
+    });
+
+    // Move forward 1 hour
+    currentDate.setHours(currentHour + 1)
+  }
+
+  // Make the array for reservations and push all the created slots to it
+  const reservations = [];
+  reservations.push(slots)
+
+  return {
+    ...contractor,
+    reservations,
+  };
+});
 
   await Contractor.insertMany(mockData);
 } catch (error) {
