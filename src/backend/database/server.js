@@ -70,7 +70,6 @@ app.post("/reserve", cors(), async (req, res) => {
     }
 
     const startDate = new Date(requestData.startDate);
-    startDate.setHours(startDate.getHours() + 3);
 
     if (isNaN(startDate.getTime())) {
       return res.status(400).json({
