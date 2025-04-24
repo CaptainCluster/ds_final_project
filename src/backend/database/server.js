@@ -14,6 +14,9 @@ try {
   await mongoose.connect("mongodb://127.0.0.1:27017/ds_final_project");
   console.log("MongoDB connected");
 
+  /**
+   * @TODO - Remove before "production" phase
+   */ 
   // Delete existing contractors, should be removed in final version
   await Contractor.deleteMany({});
 
@@ -81,6 +84,7 @@ app.get("/", cors(), (req, res) => {
 app.post("/request", cors(), async (req, res) => {
   try {
     const requestData = req.body.data;
+    
     const contractor = await Contractor.findOne({
       email: requestData.contractorEmail,
     });
@@ -116,6 +120,7 @@ app.post("/reserve", cors(), async (req, res) => {
     }
 
     const startDate = new Date(requestData.startDate);
+    console.log("startdate: " + startDate)
 
     if (isNaN(startDate.getTime())) {
       return res.status(400).json({ error: "Invalid reservation date." });
@@ -123,9 +128,12 @@ app.post("/reserve", cors(), async (req, res) => {
 
     const dayIndex = startDate.getDay() - 1;
     const hourIndex = startDate.getHours() - 8;
+   
+    /*
     if (dayIndex < 0 || dayIndex > 4 || hourIndex < 0 || hourIndex > 7) {
       return res.status(400).json({ error: "Invalid reservation time." });
     }
+    */
 
     await Contractor.updateOne(
       { _id: contractor._id },
