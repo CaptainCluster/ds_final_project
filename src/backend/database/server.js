@@ -84,6 +84,14 @@ app.post("/request", cors(), async (req, res) => {
     const contractor = await Contractor.findOne({
       email: requestData.contractorEmail,
     });
+
+    // Handling cases where a contractor is not found
+    if (!contractor || contractor == null) {
+        return res.status(404).json({
+          msg: `Could not find a contractor with the following email: ${requestData.contractorEmail}` 
+        })
+    } 
+
     return res.status(200).json({
       name: contractor.name,
       email: contractor.email,

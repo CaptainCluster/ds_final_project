@@ -17,11 +17,19 @@ async function requestContractorData(data, res) {
             })
         });
 
+        // Handling unsuccessful requests                
+        if (response.status != 200) {
+            return res.status(response.status).json({
+                success: false,
+                msg: "Failed to receive data."
+            })
+        }
+
         // Wait for response data and parse it as json
         const dbData = await response.json();
 
         // Send the received data back to the client
-        res.status(200).send({
+        res.status(200).json({
             "type": "response_result",
             "data": {
                 "success": true,
