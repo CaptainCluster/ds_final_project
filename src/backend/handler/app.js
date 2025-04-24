@@ -4,6 +4,7 @@ import cors from "cors";
 import requestContractorData from "../utils/requestContractorData.js";
 import sendErrorResponse from "../utils/sendErrorResponse.js";
 import sendReservation from "../utils/sendReservation.js";
+import retryReservation from "../utils/retryReservation.js";
 
 const app = express();
 const port = 8000;
@@ -57,7 +58,7 @@ app.post("/fetch_data", (req, res) => {
  *
  * @type POST
  */
-app.post("/reserve", (req, res) => {
+app.post("/reserve", async (req, res) => {
   if (!req.body?.data) {
     res.status(400).json({
       success: false,
@@ -66,10 +67,57 @@ app.post("/reserve", (req, res) => {
     return;
   }
 
-  // Send the rservation request to all databases
-  dbURLs.forEach((dbURL) => {
-    sendReservation(req.body.data, dbURL, res);
-  });
+  // Send the reservation request to all databases
+  const failedDbPorts = [];
+  const successfullDbPorts = [];
+  const responses = await Promise.all(
+    dbURLs.map((dbURL) => sendReservation(req.body.data, dbURL))
+  );
+  responses.forEach(r => {
+    if(r.data.success) {
+        successfullDbPorts.push(r.data.database);
+        console.log(`The database at port ${r.data.database} was succesfully updated.`)
+    } else {
+        failedDbPorts.push(r.data.database);
+        console.log(`The database at port ${r.data.database} failed to update its data.`)
+    }
+  })
+
+  if(failedDbPorts.length == 0) {
+    res.status(200).json({
+        success: true,
+        msg: "Updated the reservation to all databases successfully."
+    })
+    return;
+  } else {
+    const retryResults = await Promise.all(
+        failedDbPorts.map((port) => retryReservation(port, req.body.data))
+    );
+
+    retryResults.forEach(({success, port}) => {
+        if(success) {
+            successfullDbPorts.push(port);
+        } else {
+            console.log("Port " + port + " failed even after retrying.");
+        }
+    });
+  }
+
+
+  if(successfullDbPorts.length == process.env.DB_PORTS.length) {
+    res.status(200).json({
+        success: true,
+        msg: "Updated the reservation to all databases successfully."
+    })
+    return;
+  } else {
+    res.status(207).json({
+        success: false,
+        msg: "The reservation was unable to be updated to all database servers..."
+    })
+    return;
+  }
+
 });
 
 app.listen(port, () => {

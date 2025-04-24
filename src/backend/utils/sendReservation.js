@@ -26,26 +26,31 @@ async function sendReservation(data, dbURL, res) {
 
     // Send feedback to client depending on if the reservation is successful or not
     if (data.success) {
-      res.status(200).send({
+      return ({
         type: "response_result",
         data: {
-          success: true,
-          message: "Reservation made successfully.",
-          startDate: data.reservation.startDate,
-          reserved: data.reservation.reserved,
+            database: data.database,
+            success: true,
+            message: "Reservation made successfully.",
+            startDate: data.reservation.startDate,
+            reserved: data.reservation.reserved,
         },
       });
     } else {
-      res.status(500).send({
+      return ({
         type: "response_result",
         data: {
-          success: false,
-          message: "Could not make reservation.",
+            database: data.database,
+            success: false,
+            message: "Could not make reservation.",
         },
       });
     }
   } catch (error) {
     console.log("Error contacting DB server:", error);
+
+    // @TODO
+    // This should not require the res anymore so we can get rid of sending it to the function
     sendErrorResponse(res, "Failed to fetch data from the database.");
     return;
   }

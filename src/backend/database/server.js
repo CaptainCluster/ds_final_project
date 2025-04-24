@@ -29,6 +29,7 @@ try {
 
 app.get("/", cors(), (req, res) => {
   res.status(200).json({
+    database: PORT,
     msg: "Server is up",
   });
 });
@@ -40,13 +41,16 @@ app.post("/request", cors(), async (req, res) => {
       email: requestData.contractorEmail,
     });
     return res.status(200).json({
+      database: PORT,
       name: contractor.name,
       email: contractor.email,
       reservations: contractor.reservations,
     });
   } catch (error) {
     console.error("Server error getting contractors:", error);
-    res.status(500).json({ error: "Error handling request." });
+    res.status(500).json({
+      database: PORT,
+      error: "Error handling request." });
   }
 });
 
@@ -59,14 +63,20 @@ app.post("/reserve", cors(), async (req, res) => {
     });
 
     if (!contractor) {
-      return res.status(404).json({ error: "Contractor not found." });
+      return res.status(404).json({
+        database: PORT,
+        error: "Contractor not found." 
+      });
     }
 
     const startDate = new Date(requestData.startDate);
     startDate.setHours(startDate.getHours() + 3);
 
     if (isNaN(startDate.getTime())) {
-      return res.status(400).json({ error: "Invalid reservation date." });
+      return res.status(400).json({
+        database: PORT,
+        error: "Invalid reservation date." 
+      });
     }
 
     let dayIndex = -1;
@@ -88,13 +98,17 @@ app.post("/reserve", cors(), async (req, res) => {
     }
 
     if (dayIndex === -1 || hourIndex === -1) {
-      return res.status(404).json({ error: "Reservation time not found." });
+      return res.status(404).json({
+        database: PORT,
+        error: "Reservation time not found." 
+      });
     }
 
     // Check if reservation is taken
     if (contractor.reservations[dayIndex][hourIndex].reserved) {
       return res.status(400).json({
         error: "This time slot is already reserved.",
+        database: PORT,
         success: false,
       });
     }
@@ -113,6 +127,7 @@ app.post("/reserve", cors(), async (req, res) => {
 
     return res.status(200).json({
       success: true,
+      database: PORT,
       reservation: {
         startDate: confirm.reservations[dayIndex][hourIndex].startDate,
         reserved: confirm.reservations[dayIndex][hourIndex].reserved,
@@ -122,6 +137,7 @@ app.post("/reserve", cors(), async (req, res) => {
     console.error("Server error making a reservation:", error);
     res.status(500).json({
       error: "Error handling request.",
+      database: PORT,
       success: false,
     });
   }
