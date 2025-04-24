@@ -63,25 +63,48 @@ app.post("/reserve", cors(), async (req, res) => {
     }
 
     const startDate = new Date(requestData.startDate);
+    startDate.setHours(startDate.getHours() + 3);
 
     if (isNaN(startDate.getTime())) {
       return res.status(400).json({ error: "Invalid reservation date." });
     }
 
-    const dayIndex = startDate.getDay() - 1;
-    const hourIndex = startDate.getHours() - 8;
-    if (dayIndex < 0 || dayIndex > 4 || hourIndex < 0 || hourIndex > 7) {
-      return res.status(400).json({ error: "Invalid reservation time." });
+    let dayIndex = -1;
+    let hourIndex = -1;
+
+    // Find the day and hour index for the reservation
+    for (let i = 0; i < contractor.reservations.length; i++) {
+      const day = contractor.reservations[i];
+      for (let j = 0; j < day.length; j++) {
+        if (day[j].startDate.getTime() === startDate.getTime()) {
+          dayIndex = i;
+          hourIndex = j;
+          break;
+        }
+      }
+      if (dayIndex !== -1) {
+        break;
+      }
     }
 
-    Contractor.updateOne(
+    if (dayIndex === -1 || hourIndex === -1) {
+      return res.status(404).json({ error: "Reservation time not found." });
+    }
+
+    // Check if reservation is taken
+    if (contractor.reservations[dayIndex][hourIndex].reserved) {
+      return res.status(400).json({
+        error: "This time slot is already reserved.",
+        success: false,
+      });
+    }
+
+    await Contractor.updateOne(
       { _id: contractor._id },
-      { $set: { "reservations.$[outer].$[inner].reserved": true } },
       {
-        arrayFilters: [
-          { outer: { $type: "array" } },
-          { "inner.startDate": startDate },
-        ],
+        $set: {
+          [`reservations.${dayIndex}.${hourIndex}.reserved`]: true,
+        },
       }
     );
 
