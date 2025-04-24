@@ -14,6 +14,9 @@ try {
   await mongoose.connect("mongodb://127.0.0.1:27017/ds_final_project");
   console.log("MongoDB connected");
 
+  /**
+   * @TODO - Remove before "production" phase
+   */ 
   // Delete existing contractors, should be removed in final version
   await Contractor.deleteMany({});
 

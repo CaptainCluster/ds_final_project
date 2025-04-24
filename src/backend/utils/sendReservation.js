@@ -20,17 +20,22 @@ async function sendReservation(data, res) {
                 "data": {
                     "contractorEmail": data.contractorEmail,
                     "startDate": data.startDate,
-                    "endDate": data.endDate
                 }
             })
         });
 
+        if (response.status != 200) {
+          return res.status(response.status).json({
+            "error": `Reservation failed. Status: ${res.status}`
+          })
+        }
+       
         // Wait for response and parse it as json
         response = await response.json();
-
+        
         // Send feedback to client depending on if the reservation is successful or not
         if(response.data.result) {
-            res.status(200).send({
+            res.status(200).json({
                 "type": "response_result",
                 "data": {
                     "success": true,
@@ -38,7 +43,7 @@ async function sendReservation(data, res) {
                 }
             });
         }else {
-            res.status(500).send({
+            res.status(500).json({
                 "type": "response_result",
                 "data": {
                     "success": false,
