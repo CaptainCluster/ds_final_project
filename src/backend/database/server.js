@@ -6,14 +6,14 @@ import { createMockReservations } from "../utils/createMockReservations.js";
 import cors from "cors";
 
 const app = express();
-const PORT = 5173;
+const PORT = process.env.PORT || 5173;
+const DB_NAME = process.env.DB_NAME || "ds_final_project_1";
 
 app.use(cors());
 app.use(express.json());
 
 try {
-  await mongoose.connect("mongodb://127.0.0.1:27017/ds_final_project");
-  console.log("MongoDB connected");
+  await mongoose.connect(`mongodb://127.0.0.1:27017/${DB_NAME}`);
 
   // Delete existing contractors, should be removed in final version
   await Contractor.deleteMany({});
@@ -128,5 +128,7 @@ app.post("/reserve", cors(), async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(
+    `Database server is running on port ${PORT} with database ${DB_NAME}`
+  );
 });
