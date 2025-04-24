@@ -88,7 +88,7 @@ app.post("/request", cors(), async (req, res) => {
     // Handling cases where a contractor is not found
     if (!contractor || contractor == null) {
         return res.status(404).json({
-          msg: `Could not find a contractor with the following email: ${requestData.contractorEmail}` 
+          error: `Could not find a contractor with the following email: ${requestData.contractorEmail}` 
         })
     } 
 
