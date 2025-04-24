@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import Contractor from "./models/Contractor.js";
 import { mockContractors } from "./mockData.js";
+import { createMockReservations } from "../utils/createMockReservations.js";
 import cors from "cors";
 
 const app = express();
