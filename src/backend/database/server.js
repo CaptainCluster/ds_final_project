@@ -18,28 +18,48 @@ try {
   await Contractor.deleteMany({});
 
   const mockData = mockContractors.map((contractor) => {
-    const monday = new Date(2025, 3, 21); // Hard coded monday, can be changed at some point
+    // Times in UTC + 3 (Finland)
+    const reservations = [];
+    const workDayStart = 11; // 8:00
+    const workDayStop = 19; // 16:00
+    const maxDays = 5;
+    const currentDate = new Date();
+    currentDate.setHours(currentDate.getHours() + 4);
+    currentDate.setMinutes(0, 0, 0);
 
-    // Create reservation arrays for the next 5 weekdays
-    const reservations = Array(5)
-      .fill()
-      .map((_, dayIndex) => {
-        const day = new Date(monday);
-        day.setDate(monday.getDate() + dayIndex);
+    // Create 5 day arrays
+    for (let day = 0; day < maxDays; day++) {
+      const daySlots = [];
 
-        // Create 8 hour slots from 8am to 4pm
-        return Array(8)
-          .fill()
-          .map((_, hourIndex) => {
-            const slotDate = new Date(day);
-            slotDate.setHours(11 + hourIndex, 0, 0, 0); // UTC + 3 because finland
+      // Skip weekends
+      const dayOfWeek = currentDate.getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        currentDate.setDate(currentDate.getDate() + 1);
+        day--;
+        continue;
+      }
 
-            return {
-              reserved: false,
-              startDate: slotDate,
-            };
-          });
-      });
+      // Create 8 hour slots
+      for (let hour = 0; hour < 8; hour++) {
+        if (currentDate.getHours() + 1 > workDayStop) {
+          break;
+        }
+
+        daySlots.push({
+          reserved: false,
+          startDate: new Date(currentDate),
+        });
+
+        currentDate.setHours(currentDate.getHours() + 1);
+      }
+
+      // Add complete day to reservations
+      reservations.push(daySlots);
+
+      // Move to next day
+      currentDate.setDate(currentDate.getDate() + 1);
+      currentDate.setHours(workDayStart, 0, 0, 0);
+    }
 
     return {
       ...contractor,
