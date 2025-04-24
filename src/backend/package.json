@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "concurrently \"npm run start:database\" \"wait-on http://localhost:5173 && npm run start:handler\"",
-    "start:database": "cd database && npm run prod",
+    "start": "concurrently \"npm run start:database\" \"wait-on http://localhost:5173 && wait-on http://localhost:5174 && wait-on http://localhost:5175 && npm run start:handler\"",
+    "start:database": "cd database && npm run start:all",
     "start:handler": "cd handler && npm run prod",
     "dev": "concurrently \"npm run dev:database\" \"wait-on http://localhost:5173 && npm run dev:handler\"",
     "dev:database": "cd database && npm run dev",

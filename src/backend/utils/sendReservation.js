@@ -1,62 +1,59 @@
 import sendErrorResponse from "./sendErrorResponse.js";
 
-const dbPort = 5173;
-const dbURL = `http://localhost:${dbPort}`;
-
-
 // ---------------- Sending reservation to database ---------------- //
 
-async function sendReservation(data, res) {
-    console.log("Sending reservation...")
+async function sendReservation(data, dbURL, res) {
+  console.log("Sending reservation...");
 
-    try {
-        let response = await fetch(dbURL + "/reserve", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "type": "db_request",
-                "data": {
-                    "contractorEmail": data.contractorEmail,
-                    "startDate": data.startDate,
-                }
-            })
-        });
-        
-        // Handling cases where the request failed
-        if (response.status != 200) {
-          return res.status(response.status).json({
-            "error": `Reservation failed. Status: ${response.status}`
-          })
-        }
-       
-        // Wait for response and parse it as json
-        response = await response.json();
-        
-        // Send feedback to client depending on if the reservation is successful or not
-        if(response.data.result) {
-            res.status(200).json({
-                "type": "response_result",
-                "data": {
-                    "success": true,
-                    "message": "Reservation made successfully."
-                }
-            });
-        }else {
-            res.status(500).json({
-                "type": "response_result",
-                "data": {
-                    "success": false,
-                    "message": "Could not make reservation."
-                }
-            });
-        }
-    } catch (error) {
-        console.log("Error contacting DB server:", error);
-        sendErrorResponse(res, "Failed to fetch data from the database.");
-        return
+  try {
+    let response = await fetch(dbURL + "/reserve", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type: "db_request",
+        data: {
+          contractorEmail: data.contractorEmail,
+          startDate: data.startDate,
+          endDate: data.endDate,
+        },
+      }),
+    });
+
+    // Wait for response and parse it as json
+    data = await response.json();
+
+    // Send feedback to client depending on if the reservation is successful or not
+    if (data.success) {
+      return {
+        type: "response_result",
+        data: {
+          database: data.database,
+          success: true,
+          message: "Reservation made successfully.",
+          startDate: data.reservation.startDate,
+          reserved: data.reservation.reserved,
+        },
+      };
+    } else {
+      return {
+        type: "response_result",
+        data: {
+          database: data.database,
+          success: false,
+          message: "Could not make reservation.",
+        },
+      };
     }
+  } catch (error) {
+    console.log("Error contacting DB server:", error);
+
+    // @TODO
+    // This should not require the res anymore so we can get rid of sending it to the function
+    sendErrorResponse(res, "Failed to fetch data from the database.");
+    return;
+  }
 }
 
 export default sendReservation;

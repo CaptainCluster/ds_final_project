@@ -4,7 +4,11 @@
   "main": "index.js",
   "scripts": {
     "prod": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "start:db1": "cross-env PORT=5173 DB_NAME=ds_final_project_1 node server.js",
+    "start:db2": "cross-env PORT=5174 DB_NAME=ds_final_project_2 node server.js",
+    "start:db3": "cross-env PORT=5175 DB_NAME=ds_final_project_3 node server.js",
+    "start:all": "concurrently \"npm run start:db1\" \"npm run start:db2\" \"npm run start:db3\""
   },
   "keywords": [],
   "author": "",
@@ -12,7 +16,9 @@
   "type": "module",
   "description": "",
   "dependencies": {
+    "concurrently": "^9.1.2",
     "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
     "express": "^5.1.0",
     "mongoose": "^8.13.2"
   },
