@@ -26,25 +26,25 @@ async function sendReservation(data, dbURL, res) {
 
     // Send feedback to client depending on if the reservation is successful or not
     if (data.success) {
-      return ({
+      return {
         type: "response_result",
         data: {
-            database: data.database,
-            success: true,
-            message: "Reservation made successfully.",
-            startDate: data.reservation.startDate,
-            reserved: data.reservation.reserved,
+          database: data.database,
+          success: true,
+          message: "Reservation made successfully.",
+          startDate: data.reservation.startDate,
+          reserved: data.reservation.reserved,
         },
-      });
+      };
     } else {
-      return ({
+      return {
         type: "response_result",
         data: {
-            database: data.database,
-            success: false,
-            message: "Could not make reservation.",
+          database: data.database,
+          success: false,
+          message: "Could not make reservation.",
         },
-      });
+      };
     }
   } catch (error) {
     console.log("Error contacting DB server:", error);

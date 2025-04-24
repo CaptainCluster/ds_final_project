@@ -15,6 +15,9 @@ app.use(express.json());
 try {
   await mongoose.connect(`mongodb://127.0.0.1:27017/${DB_NAME}`);
 
+  /**
+   * @TODO - Remove before "production" phase
+   */
   // Delete existing contractors, should be removed in final version
   await Contractor.deleteMany({});
 
@@ -37,9 +40,18 @@ app.get("/", cors(), (req, res) => {
 app.post("/request", cors(), async (req, res) => {
   try {
     const requestData = req.body.data;
+
     const contractor = await Contractor.findOne({
       email: requestData.contractorEmail,
     });
+
+    // Handling cases where a contractor is not found
+    if (!contractor || contractor == null) {
+      return res.status(404).json({
+        error: `Could not find a contractor with the following email: ${requestData.contractorEmail}`,
+      });
+    }
+
     return res.status(200).json({
       database: PORT,
       name: contractor.name,
@@ -50,7 +62,8 @@ app.post("/request", cors(), async (req, res) => {
     console.error("Server error getting contractors:", error);
     res.status(500).json({
       database: PORT,
-      error: "Error handling request." });
+      error: "Error handling request.",
+    });
   }
 });
 
@@ -65,16 +78,17 @@ app.post("/reserve", cors(), async (req, res) => {
     if (!contractor) {
       return res.status(404).json({
         database: PORT,
-        error: "Contractor not found." 
+        error: "Contractor not found.",
       });
     }
 
     const startDate = new Date(requestData.startDate);
+    console.log("startdate: " + startDate);
 
     if (isNaN(startDate.getTime())) {
       return res.status(400).json({
         database: PORT,
-        error: "Invalid reservation date." 
+        error: "Invalid reservation date.",
       });
     }
 
@@ -99,7 +113,7 @@ app.post("/reserve", cors(), async (req, res) => {
     if (dayIndex === -1 || hourIndex === -1) {
       return res.status(404).json({
         database: PORT,
-        error: "Reservation time not found." 
+        error: "Reservation time not found.",
       });
     }
 

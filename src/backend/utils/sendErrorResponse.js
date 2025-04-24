@@ -2,9 +2,8 @@
 
 function sendErrorResponse(res, message) {
     res.status(500).send({
-        "type": "error",
         "data": {
-            "message": message
+            "error": message
         }
     });
 }
