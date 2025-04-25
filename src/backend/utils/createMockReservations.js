@@ -8,6 +8,11 @@ export const createMockReservations = (contractor) => {
   currentDate.setHours(currentDate.getHours() + 4);
   currentDate.setMinutes(0, 0, 0);
 
+  // Set current date to the next workday start time if time is between 0.00 and 8.00
+  if (currentDate.getHours() < workDayStart) {
+    currentDate.setHours(workDayStart, 0, 0, 0);
+  }
+
   // Create 5 day arrays
   for (let day = 0; day < maxDays; day++) {
     const daySlots = [];
