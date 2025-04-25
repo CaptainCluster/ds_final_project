@@ -70,9 +70,11 @@ app.post("/reserve", async (req, res) => {
   // Send the reservation request to all databases
   const failedDbPorts = [];
   const successfullDbPorts = [];
+
   const responses = await Promise.all(
     dbURLs.map((dbURL) => sendReservation(req.body.data, dbURL))
   );
+
   responses.forEach((r) => {
     if (r.data.success) {
       successfullDbPorts.push(r.data.database);
@@ -88,38 +90,35 @@ app.post("/reserve", async (req, res) => {
   });
 
   if (failedDbPorts.length == 0) {
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       msg: "Updated the reservation to all databases successfully.",
     });
-    return;
-  } else {
-    const retryResults = await Promise.all(
-      failedDbPorts.map((port) => retryReservation(port, req.body.data))
-    );
-
-    retryResults.forEach(({ success, port }) => {
-      if (success) {
-        successfullDbPorts.push(port);
-      } else {
-        console.log("Port " + port + " failed even after retrying.");
-      }
-    });
   }
+  
+  const retryResults = await Promise.all(
+    failedDbPorts.map((port) => retryReservation(port, req.body.data))
+  );
+
+  retryResults.forEach(({ success, port }) => {
+    if (success) {
+      successfullDbPorts.push(port);
+    } else {
+      console.log("Port " + port + " failed even after retrying.");
+    }
+  });
 
   if (successfullDbPorts.length == process.env.DB_PORTS.length) {
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       msg: "Updated the reservation to all databases successfully.",
     });
-    return;
-  } else {
-    res.status(207).json({
-      success: false,
-      msg: "The reservation was unable to be updated to all database servers...",
-    });
-    return;
-  }
+  } 
+
+  res.status(207).json({
+    success: false,
+    msg: "The reservation was unable to be updated to all database servers...",
+  });
 });
 
 app.listen(port, () => {
