@@ -68,11 +68,16 @@ app.post("/reserve", async (req, res) => {
   }
 
   // Send the reservation request to all databases
+
+  // Keep track of successful and failed ports
   const failedDbPorts = [];
   const successfullDbPorts = [];
+  // Use promise.all so that we wait until all of the promises are resolved
   const responses = await Promise.all(
+    // Send reservation to all databases based on their ports
     dbURLs.map((dbURL) => sendReservation(req.body.data, dbURL))
   );
+  // Loop through each response (From the first attempt) and check if they are successful or not
   responses.forEach(r => {
     if(r.data.success) {
         successfullDbPorts.push(r.data.database);
@@ -83,17 +88,20 @@ app.post("/reserve", async (req, res) => {
     }
   })
 
+  // If no db reservations failed, send success to client
   if(failedDbPorts.length == 0) {
     res.status(200).json({
         success: true,
         msg: "Updated the reservation to all databases successfully."
     })
     return;
+  // If any of them fail, attempt all failed ones using retryReservation
   } else {
     const retryResults = await Promise.all(
         failedDbPorts.map((port) => retryReservation(port, req.body.data))
     );
 
+    // Add succeeded databases to successful list
     retryResults.forEach(({success, port}) => {
         if(success) {
             successfullDbPorts.push(port);
@@ -103,13 +111,14 @@ app.post("/reserve", async (req, res) => {
     });
   }
 
-
+  // If all succeeded after retry
   if(successfullDbPorts.length == process.env.DB_PORTS.length) {
     res.status(200).json({
         success: true,
         msg: "Updated the reservation to all databases successfully."
     })
     return;
+  // If some reservations stil failed after retrying
   } else {
     res.status(207).json({
         success: false,
