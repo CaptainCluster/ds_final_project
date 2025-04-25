@@ -30,6 +30,7 @@ async function sendReservation(data, dbURL, res) {
         type: "response_result",
         data: {
           database: data.database,
+          status: response.status,
           success: true,
           message: "Reservation made successfully.",
           startDate: data.reservation.startDate,
@@ -39,6 +40,7 @@ async function sendReservation(data, dbURL, res) {
     } else {
       return {
         type: "response_result",
+        status: response.status,
         data: {
           database: data.database,
           success: false,

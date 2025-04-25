@@ -2,9 +2,9 @@ import express from "express";
 import cors from "cors";
 
 import requestContractorData from "../utils/requestContractorData.js";
-import sendErrorResponse from "../utils/sendErrorResponse.js";
 import sendReservation from "../utils/sendReservation.js";
 import retryReservation from "../utils/retryReservation.js";
+import nodesCheckReservationSuccess from "../utils/nodesCheckReservationSuccess.js";
 
 const app = express();
 const port = 8000;
@@ -69,17 +69,27 @@ app.post("/reserve", async (req, res) => {
 
   // Send the reservation request to all databases
   const failedDbPorts = [];
-  const successfullDbPorts = [];
+  const successfulDbPorts = [];
 
   const responses = await Promise.all(
     dbURLs.map((dbURL) => sendReservation(req.body.data, dbURL))
   );
 
+  // Checking whether any changes were made to any of the db instances.
+  // If not, no sychronization is done.
+  if (!nodesCheckReservationSuccess(responses)) {
+    console.error("An error occurred when attempting to reserve a slot.");
+    return res.status(400).json({
+      success: false,
+      msg: "Could not reserve a time slot."
+    });
+  }
+
   responses.forEach((r) => {
     if (r.data.success) {
-      successfullDbPorts.push(r.data.database);
+      successfulDbPorts.push(r.data.database);
       console.log(
-        `The database at port ${r.data.database} was succesfully updated.`
+        `The database at port ${r.data.database} was successfully updated.`
       );
     } else {
       failedDbPorts.push(r.data.database);
@@ -89,7 +99,7 @@ app.post("/reserve", async (req, res) => {
     }
   });
 
-  if (failedDbPorts.length == 0) {
+  if (failedDbPorts.length === 0) {
     return res.status(200).json({
       success: true,
       msg: "Updated the reservation to all databases successfully.",
@@ -102,22 +112,22 @@ app.post("/reserve", async (req, res) => {
 
   retryResults.forEach(({ success, port }) => {
     if (success) {
-      successfullDbPorts.push(port);
+      successfulDbPorts.push(port);
     } else {
       console.log("Port " + port + " failed even after retrying.");
     }
   });
 
-  if (successfullDbPorts.length == process.env.DB_PORTS.length) {
-    return res.status(200).json({
-      success: true,
-      msg: "Updated the reservation to all databases successfully.",
+  if (successfulDbPorts.length !== process.env.DB_PORTS.length) {
+    return res.status(207).json({
+      success: false,
+      msg: "The reservation was unable to be updated to all database servers...",
     });
   } 
 
-  res.status(207).json({
-    success: false,
-    msg: "The reservation was unable to be updated to all database servers...",
+  res.status(200).json({
+    success: true,
+    msg: "Updated the reservation to all databases successfully.",
   });
 });
 
