@@ -71,6 +71,14 @@ app.post("/reserve", cors(), async (req, res) => {
   try {
     const requestData = req.body.data;
 
+    // Checking whether the required data exists.
+    if (!requestData.contractorEmail || !requestData.startDate) {
+      return res.status(400).json({
+        database: PORT,
+        error: "The reservation request did not provide necessary data."
+      })
+    }
+
     const contractor = await Contractor.findOne({
       email: requestData.contractorEmail,
     });
