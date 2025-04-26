@@ -1,17 +1,31 @@
 async function requestContractorData(data, dbURL, res) {
   console.log("Sending request for contractor data...");
   try {
+
+    // Logic for creating the request body depending on if
+    // the client provides a name or email to search with
+    let requestBody = "";
+    if(data.contractorEmail) {
+      requestBody = JSON.stringify({
+        type: "db_request",
+        data: {
+          contractorEmail: data.contractorEmail
+        }
+      });
+    } else if(data.contractorName) {
+      requestBody = JSON.stringify({
+        type: "db_request",
+        data: {
+          contractorName: data.contractorName
+        }
+      });
+    }
     const response = await fetch(dbURL + "/request", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        type: "db_request",
-        data: {
-          contractorEmail: data.contractorEmail,
-        },
-      }),
+      body: requestBody
     });
 
     // Wait for response data and parse it as json

@@ -40,10 +40,18 @@ app.get("/", cors(), (req, res) => {
 app.post("/request", cors(), async (req, res) => {
   try {
     const requestData = req.body.data;
-
-    const contractor = await Contractor.findOne({
-      email: requestData.contractorEmail,
-    });
+    let contractor = "";
+    // Searching for the contractor with Email or Name
+    // depending on which one was provided
+    if(requestData.contractorEmail) {
+      contractor = await Contractor.findOne({
+        email: requestData.contractorEmail,
+      });
+    } else if(requestData.contractorName) {
+      contractor = await Contractor.findOne({
+        name: requestData.contractorName,
+      });
+    }
 
     // Handling cases where a contractor is not found
     if (!contractor || contractor == null) {
