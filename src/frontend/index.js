@@ -23,15 +23,28 @@ const fetchConsultantByName = async () => {
 
     const nameP = document.createElement("p");
     const emailP = document.createElement("p");
+    const reserveButton = document.createElement("button");
 
     nameP.className = "consultant-name";
     emailP.className = "consultant-email";
   
     nameP.textContent = consultant.name;
     emailP.textContent = consultant.email;
+    reserveButton.textContent = "Reserve a time slot";
+
+    /**
+     * Email handling 
+     * @src https://stackoverflow.com/questions/22607150/getting-the-url-parameters-inside-the-html-page
+     */
+    reserveButton.addEventListener("click", () => { 
+      window.location.href = `/pages/reserve?email=${consultant.email}` 
+      
+      container.appendChild(nameP)
+    })
 
     entry.appendChild(nameP);
-    entry.appendChild(emailP)
+    entry.appendChild(emailP);
+    entry.appendChild(reserveButton);
 
     container.appendChild(
       entry
@@ -40,4 +53,3 @@ const fetchConsultantByName = async () => {
 }
 
 fetchConsultantByName()
-
