@@ -35,6 +35,11 @@ const fetchTimeSlots = async (consultEmail) => {
     
     const container = document.getElementById("container");
     
+    const emailH2 = document.createElement("h2");
+    emailH2.className = "header-email";
+    emailH2.textContent = consultEmail;
+    container.appendChild(emailH2);
+
     consultData.reservations.forEach(reservationDay => {
 
         // Continuing the loop if no free timeslots remain
