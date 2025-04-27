@@ -8,7 +8,7 @@ const getEmailFromUrl = () => {
 
 const formatDateDay = (dateString) => {
     const dayDate = new Date(dateString);
-    const formattedDateString = `${dayDate.getDay()}.${dayDate.getMonth()}`;
+    const formattedDateString = `${dayDate.getUTCDate()}.${dayDate.getMonth()}`;
     return formattedDateString;
 }
 
@@ -32,7 +32,6 @@ const fetchTimeSlots = async (consultEmail) => {
     });
     const data = await response.json();
     const consultData = data.data.data;
-    console.log(consultData)    
     
     const container = document.getElementById("container");
     
@@ -41,8 +40,7 @@ const fetchTimeSlots = async (consultEmail) => {
         // Continuing the loop if no free timeslots remain
         if (reservationDay.length === 0) {
             return;
-        }
-
+        } 
         const dayEntry = document.createElement("div");
         dayEntry.className = "day-entry";
         dayEntry.textContent = formatDateDay(reservationDay[0].startDate)
@@ -65,6 +63,8 @@ const fetchTimeSlots = async (consultEmail) => {
             const reserveButton = document.createElement("button");
             reserveButton.textContent = "Reserve time";
             reserveButton.className = "reserve-button";
+            reserveButton.addEventListener("click", () => window.location.href=`/pages/notify/notify?date=${reservationSlot.startDate}&email=${consultData.email}`)
+
             entry.appendChild(reserveButton);
 
             dayEntry.appendChild(entry);
