@@ -37,6 +37,44 @@ app.get("/", cors(), (req, res) => {
   });
 });
 
+/**
+ * A route for receiving the names and email addresses of every single
+ * consult that exists.
+ */
+app.get("/all", cors(), async (req, res) => {
+ try {
+  const contractorData = await Contractor.find();
+  const contractorDataArray = [];
+
+  // Sorting the data into an array
+  contractorData.forEach((contractor) => {
+    const contractorInfo = {
+      name: contractor.name,
+      email: contractor.email
+    }
+    contractorDataArray.push(contractorInfo);
+  });
+  
+  // Handling edge-cases where no data exists within the database
+  if (contractorDataArray.length === 0) {
+    return res.status(500).json({
+      msg: "No data exists."
+    })
+  }
+  res.status(200).json({
+    msg: "Data query successful.",
+    contractors: contractorDataArray
+  });
+
+ } catch (error) {
+  console.error("Server error getting contractors:", error);
+  res.status(500).json({
+    database: PORT,
+    error: "Error handling request.",
+  });
+ }
+});
+
 app.post("/request", cors(), async (req, res) => {
   try {
     const requestData = req.body.data;

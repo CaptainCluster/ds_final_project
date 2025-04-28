@@ -1,0 +1,91 @@
+const SERVER_PORT = 8000;
+
+const getEmailFromUrl = () => {
+    let url = window.location.search.substring(1);
+    const consultEmail = url.split("=")[1];
+    return consultEmail;
+}
+
+const checkReservedTimes = (timeSlots) => {
+  return timeSlots.some(timeSlot => !timeSlot.reserved)
+}
+
+const formatDateDay = (dateString) => {
+    const dayDate = new Date(dateString);
+    const formattedDateString = `${dayDate.getUTCDate()}.${dayDate.getMonth()}`;
+    return formattedDateString;
+}
+
+const formatDateHours = (dateString) => {
+    const startDate = new Date(dateString);
+    const formattedDateString = `${startDate.getHours()}:00`;
+    return formattedDateString;
+}
+
+const fetchTimeSlots = async (consultEmail) => {
+    const response = await fetch(`http://localhost:${SERVER_PORT}/fetch_data`, {
+        method: "POST",
+        headers: {
+            "content-type": "application/json",
+        },
+        body: JSON.stringify({
+            data: {
+                contractorEmail: consultEmail,
+            }
+        })
+    });
+    const data = await response.json();
+    const consultData = data.data.data;
+    
+    const container = document.getElementById("container");
+    
+    const emailH2 = document.createElement("h2");
+    emailH2.className = "header-email";
+    emailH2.textContent = consultEmail;
+    container.appendChild(emailH2);
+
+    consultData.reservations.forEach(reservationDay => {
+        // Continuing the loop if no free timeslots remain
+        if (reservationDay.length === 0) {
+          return;
+        }
+        
+        const dayEntry = document.createElement("div");
+        if (checkReservedTimes(reservationDay)) {
+          dayEntry.className = "day-entry";
+          dayEntry.textContent = formatDateDay(reservationDay[0].startDate)
+        }
+
+
+
+        reservationDay.forEach(reservationSlot => {
+            if (reservationSlot.reserved) {
+                return;
+            }
+            const entry = document.createElement("div");
+            entry.className = "timeslot-entry"
+
+            const startDateP = document.createElement("p");
+
+            const formattedDate = formatDateHours(reservationSlot.startDate);
+            startDateP.textContent = formattedDate
+
+            entry.appendChild(startDateP);
+
+            // Creating the button for reserving the time slot
+            const reserveButton = document.createElement("button");
+            reserveButton.textContent = "Reserve time";
+            reserveButton.className = "reserve-button";
+            reserveButton.addEventListener("click", () => window.location.href=`/pages/notify/notify?date=${reservationSlot.startDate}&email=${consultData.email}`)
+
+            entry.appendChild(reserveButton);
+
+            dayEntry.appendChild(entry);
+        });
+        container.appendChild(dayEntry);
+    });
+}
+
+const consultEmail = getEmailFromUrl();
+fetchTimeSlots(consultEmail)
+
