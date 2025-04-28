@@ -36,7 +36,7 @@ const fetchConsultantByName = async () => {
      * Email handling 
      * @src https://stackoverflow.com/questions/22607150/getting-the-url-parameters-inside-the-html-page
      */
-    reserveButton.addEventListener("click", () => window.location.href = `/pages/reserve/reserve?email=${consultant.email}`)
+    reserveButton.addEventListener("click", () => window.location.href = `/src/frontend/pages/reserve/reserve.html?email=${consultant.email}`)
 
     entry.appendChild(nameP);
     entry.appendChild(emailP);

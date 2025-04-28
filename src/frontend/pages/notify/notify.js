@@ -23,7 +23,7 @@ const handleReservation = async (urlData) => {
     container.appendChild(statusIndicatorP);
   
     const backButton = document.createElement("button");
-    backButton.addEventListener("click", () => window.location.href = "/");
+    backButton.addEventListener("click", () => window.location.href = "/src/frontend/index.html");
     backButton.textContent = "Return to home page";
     container.appendChild(backButton);
 
