@@ -6,6 +6,10 @@ const getEmailFromUrl = () => {
     return consultEmail;
 }
 
+const checkReservedTimes = (timeSlots) => {
+  return timeSlots.some(timeSlot => !timeSlot.reserved)
+}
+
 const formatDateDay = (dateString) => {
     const dayDate = new Date(dateString);
     const formattedDateString = `${dayDate.getUTCDate()}.${dayDate.getMonth()}`;
@@ -41,14 +45,18 @@ const fetchTimeSlots = async (consultEmail) => {
     container.appendChild(emailH2);
 
     consultData.reservations.forEach(reservationDay => {
-
         // Continuing the loop if no free timeslots remain
         if (reservationDay.length === 0) {
-            return;
-        } 
+          return;
+        }
+        
         const dayEntry = document.createElement("div");
-        dayEntry.className = "day-entry";
-        dayEntry.textContent = formatDateDay(reservationDay[0].startDate)
+        if (checkReservedTimes(reservationDay)) {
+          dayEntry.className = "day-entry";
+          dayEntry.textContent = formatDateDay(reservationDay[0].startDate)
+        }
+
+
 
         reservationDay.forEach(reservationSlot => {
             if (reservationSlot.reserved) {

@@ -1,0 +1,44 @@
+
+body {
+  padding: 2%;
+  background-color: rgb(252, 168, 245);
+}
+
+#container {
+  padding: 4%;
+  border-radius: 14px;
+
+  display: grid;
+  gap: 1vw;
+}
+
+.day-entry {
+  border-top: 1px solid black;
+  padding: 5%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)); /* Source: https://tailwindcss.com/docs/grid-template-columns */
+  gap: 1vw;
+  font-weight: bold;
+  font-size: 22px;
+}
+
+.timeslot-entry {
+  font-size: 16px;
+}
+
+button {
+  margin: auto;
+  padding: auto;
+  margin-top: 1vh;
+  margin-bottom: 1vh; 
+  
+
+  background: lightpink;
+  padding: 2%;
+  border-radius: 10px;
+}
+
+button:hover {
+  cursor: pointer;
+  font-weight: bold;
+}

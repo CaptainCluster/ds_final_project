@@ -1,0 +1,43 @@
+body {
+  padding: 2%;
+  background-color: rgb(252, 168, 245);
+}
+
+#container {
+  padding: 4%;
+  border-radius: 14px;
+
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)); /* Source: https://tailwindcss.com/docs/grid-template-columns */
+  gap: 4.5vw;
+}
+
+.consultant-entry {
+  background-color: rgb(232, 168, 255);
+  padding: 4%;
+  padding-top: 6vh;
+  padding-bottom: 6vh;
+
+  border-radius: 15px;
+
+  display: flex;
+  align-items: center;
+  flex-flow: column;
+}
+
+button {
+  margin: auto;
+  padding: auto;
+  margin-top: 5vh;
+  margin-bottom: 5vh; 
+  
+
+  background: lightpink;
+  padding: 2%;
+  border-radius: 10px;
+}
+
+button:hover {
+  cursor: pointer;
+  font-weight: bold;
+}
