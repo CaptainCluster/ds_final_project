@@ -21,6 +21,11 @@ const handleReservation = async (urlData) => {
     const statusIndicatorP = document.createElement("h1");
     statusIndicatorP.textContent = "Reserving...";
     container.appendChild(statusIndicatorP);
+  
+    const backButton = document.createElement("button");
+    backButton.addEventListener("click", () => window.location.href = "/");
+    backButton.textContent = "Return to home page";
+    container.appendChild(backButton);
 
     const response = await fetch(`http://localhost:${SERVER_PORT}/reserve`, {
         method: "POST",
@@ -38,8 +43,8 @@ const handleReservation = async (urlData) => {
     if (response.status !== 200) {
         statusIndicatorP.textContent = "Failed to reserve the timeslot.";
         return;
-    } 
-    statusIndicatorP.textContent = "Reservation successful.";
+    }
+    statusIndicatorP.textContent = "Reservation successful.";  
 }
 
 const urlData = processUrlData();
