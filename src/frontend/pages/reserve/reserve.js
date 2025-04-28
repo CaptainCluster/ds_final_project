@@ -76,7 +76,7 @@ const fetchTimeSlots = async (consultEmail) => {
             const reserveButton = document.createElement("button");
             reserveButton.textContent = "Reserve time";
             reserveButton.className = "reserve-button";
-            reserveButton.addEventListener("click", () => window.location.href=`/src/frontend/pages/notify/notify.html?date=${reservationSlot.startDate}&email=${consultData.email}`)
+            reserveButton.addEventListener("click", () => window.location.href=`/pages/notify/notify?date=${reservationSlot.startDate}&email=${consultData.email}`)
 
             entry.appendChild(reserveButton);
 
