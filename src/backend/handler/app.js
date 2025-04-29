@@ -18,7 +18,6 @@ import nodesCheckReservationSuccess from "../utils/nodesCheckReservationSuccess.
 
 const app = express();
 const port = 8000;
-
 const dbPorts = process.env.DB_PORTS
   ? process.env.DB_PORTS.split(",")
   : ["5173"];
@@ -147,6 +146,7 @@ app.post("/reserve", async (req, res) => {
   // Returning with success status if no database node issues occurred. 
   // This indicates the data was successfully updated in all nodes.
   if (failedDbPorts.length === 0) {
+    console.log("A client successfully reserved a time slot.");
     return res.status(200).json({
       success: true,
       msg: "Updated the reservation to all databases successfully.",
@@ -168,7 +168,7 @@ app.post("/reserve", async (req, res) => {
       // (port & url) is removed from db arrays, meaning it is no longer used.
       dbURLs.splice(dbPorts.indexOf(port), 1);
       dbPorts.splice(dbPorts.indexOf(port), 1);
-      console.log("Port " + port + " failed even after retrying.");
+      console.error("Port " + port + " failed even after retrying. The node is no longer used.");
     }
   });
   
@@ -180,6 +180,7 @@ app.post("/reserve", async (req, res) => {
     });
   } 
 
+  console.log("A client successfully reserved a time slot.");
   res.status(200).json({
     success: true,
     msg: "Updated the reservation to all databases successfully.",
