@@ -114,12 +114,13 @@ app.post("/reserve", async (req, res) => {
   const failedDbPorts = [];
   const successfulDbPorts = [];
 
+  // Sending the reservation to each of the nodes 
   const responses = await Promise.all(
     dbURLs.map((dbURL) => sendReservation(req.body.data, dbURL))
   );
 
   // Checking whether any changes were made to any of the db instances.
-  // If not, no sychronization is done.
+  // If not, an error has occurred and no updates have been made to the database.
   if (!nodesCheckReservationSuccess(responses)) {
     console.error("An error occurred when attempting to reserve a slot.");
     return res.status(400).json({
@@ -127,7 +128,8 @@ app.post("/reserve", async (req, res) => {
       msg: "Could not reserve a time slot."
     });
   }
-
+  
+  // Figuring out whether any databases encountered issues
   responses.forEach((r) => {
     if (r.data.success) {
       successfulDbPorts.push(r.data.database);
@@ -142,17 +144,21 @@ app.post("/reserve", async (req, res) => {
     }
   });
 
+  // Returning with success status if no database node issues occurred. 
+  // This indicates the data was successfully updated in all nodes.
   if (failedDbPorts.length === 0) {
     return res.status(200).json({
       success: true,
       msg: "Updated the reservation to all databases successfully.",
     });
   }
-  
+ 
+  // Attempting to retry with the nodes where updates failed
   const retryResults = await Promise.all(
     failedDbPorts.map((port) => retryReservation(port, req.body.data))
   );
-
+  
+  // Figuring out whether 2nd attempt was successful.  
   retryResults.forEach(({ success, port }) => {
     if (success) {
       successfulDbPorts.push(port);
@@ -160,7 +166,8 @@ app.post("/reserve", async (req, res) => {
       console.log("Port " + port + " failed even after retrying.");
     }
   });
-
+  
+  // Handling the worst-case scenario: some databases are not syncronized
   if (successfulDbPorts.length !== process.env.DB_PORTS.length) {
     return res.status(207).json({
       success: false,
