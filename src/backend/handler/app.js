@@ -15,6 +15,7 @@ import requestContractorData from "../utils/requestContractorData.js";
 import sendReservation from "../utils/sendReservation.js";
 import retryReservation from "../utils/retryReservation.js";
 import nodesCheckReservationSuccess from "../utils/nodesCheckReservationSuccess.js";
+import checkAvailableNodes from "../utils/checkAvailableNodes.js";
 
 const app = express();
 const port = 8000;
@@ -29,6 +30,7 @@ app.use(cors());
 
 // Middleware to make parsing JSON requests easy
 app.use(express.json());
+
 
 /**
  * @type GET
@@ -48,6 +50,13 @@ app.get("/test", (req, res) => {
  * consultant in the database.
  */ 
 app.get("/all", async (req, res) => {
+  if(!checkAvailableNodes(res, dbURLs, dbPorts)) {
+    return res.status(500).json({
+      error: "The server could not handle your request."
+  });
+}
+
+
   // Pick a random database and request the data
   const randomDbUrl = dbURLs[Math.floor(Math.random() * dbURLs.length)];
 
@@ -82,6 +91,12 @@ app.get("/all", async (req, res) => {
  * A route for receiving contractor data
  */
 app.post("/fetch_data", (req, res) => {
+  if(!checkAvailableNodes(res, dbURLs, dbPorts)) {
+      return res.status(500).json({
+        error: "The server could not handle your request."
+    });
+  }
+
   if (!req.body?.data) {
     res.status(400).json({
       success: false,
@@ -101,6 +116,13 @@ app.post("/fetch_data", (req, res) => {
  * the databases are syncronized.
  */
 app.post("/reserve", async (req, res) => {
+  if(!checkAvailableNodes(res, dbURLs, dbPorts)) {
+    return res.status(500).json({
+      error: "The server could not handle your request."
+  });
+}
+
+
   if (!req.body?.data) {
     res.status(400).json({
       success: false,
