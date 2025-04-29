@@ -18,7 +18,9 @@ const formatDateDay = (dateString) => {
 
 const formatDateHours = (dateString) => {
     const startDate = new Date(dateString);
-    const formattedDateString = `${startDate.getHours()}:00`;
+    
+    // Formatting (minus 3 due to timezone)
+    const formattedDateString = `${startDate.getHours()-3}:00`;
     return formattedDateString;
 }
 
