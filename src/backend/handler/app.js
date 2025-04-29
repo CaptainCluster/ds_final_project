@@ -1,3 +1,13 @@
+/**
+ * Handler can be perceived as the entry point for clients, when it comes to 
+ * communicating with the system. It picks one of the multiple database nodes
+ * and sends a request to it with the client data. The response will then be 
+ * received by the handler, which will then send it to the client.
+ *
+ * Keep in mind that all the databases (multiple instances, one in each node)
+ * are updated and syncronized every time a time slot is reserved by a client.
+ */ 
+
 import express from "express";
 import cors from "cors";
 
@@ -22,10 +32,9 @@ app.use(cors());
 app.use(express.json());
 
 /**
+ * @type GET
  * A route that helps understand whether the server
  * is online.
- *
- * @type GET
  */
 app.get("/test", (req, res) => {
   res.status(200).json({
@@ -34,6 +43,11 @@ app.get("/test", (req, res) => {
   });
 });
 
+/**
+ * @type GET
+ * A route for receiving the names and email addresses of every single 
+ * consultant in the database.
+ */ 
 app.get("/all", async (req, res) => {
   // Pick a random database and request the data
   const randomDbUrl = dbURLs[Math.floor(Math.random() * dbURLs.length)];
@@ -65,9 +79,8 @@ app.get("/all", async (req, res) => {
 });
 
 /**
- * A route for receiving contractor data
- *
  * @type POST
+ * A route for receiving contractor data
  */
 app.post("/fetch_data", (req, res) => {
   if (!req.body?.data) {
@@ -84,9 +97,9 @@ app.post("/fetch_data", (req, res) => {
 });
 
 /**
- * A route for handling a reservation
- *
  * @type POST
+ * A route for handling a reservation. Once a successful reservation is made,
+ * the databases are syncronized.
  */
 app.post("/reserve", async (req, res) => {
   if (!req.body?.data) {
