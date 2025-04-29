@@ -13,23 +13,22 @@ app.use(cors());
 app.use(express.json());
 
 try {
+  // Resetting the database instance so that it is ready for demonstration
   await mongoose.connect(`mongodb://127.0.0.1:27017/${DB_NAME}`);
-
-  /**
-   * @TODO - Remove before "production" phase
-   */
-  // Delete existing contractors, should be removed in final version
   await Contractor.deleteMany({});
-
   const mockData = mockContractors.map((contractor) =>
     createMockReservations(contractor)
   );
-
+  // Inserting the mock data 
   await Contractor.insertMany(mockData);
 } catch (error) {
   console.error("Error initializing server:", error);
 }
 
+/**
+ * @type GET
+ * A test route 
+ */
 app.get("/", cors(), (req, res) => {
   res.status(200).json({
     database: PORT,
@@ -38,6 +37,7 @@ app.get("/", cors(), (req, res) => {
 });
 
 /**
+ * @type GET
  * A route for receiving the names and email addresses of every single
  * consult that exists.
  */
@@ -46,7 +46,7 @@ app.get("/all", cors(), async (req, res) => {
   const contractorData = await Contractor.find();
   const contractorDataArray = [];
 
-  // Sorting the data into an array
+  // Filtering the data into an array
   contractorData.forEach((contractor) => {
     const contractorInfo = {
       name: contractor.name,
@@ -75,6 +75,11 @@ app.get("/all", cors(), async (req, res) => {
  }
 });
 
+/**
+ * @type POST
+ * A route that gives the information of a contractor/consultant
+ * based on their email address.
+ */ 
 app.post("/request", cors(), async (req, res) => {
   try {
     const requestData = req.body.data;
@@ -105,6 +110,11 @@ app.post("/request", cors(), async (req, res) => {
   }
 });
 
+/**
+ * @type POST
+ * A route that uses the consultant/contractor email and the start date
+ * of the time slot to reserve it.
+ */
 app.post("/reserve", cors(), async (req, res) => {
   try {
     const requestData = req.body.data;
@@ -121,6 +131,7 @@ app.post("/reserve", cors(), async (req, res) => {
       email: requestData.contractorEmail,
     });
 
+    // Handling cases where no contractor can be found.
     if (!contractor) {
       return res.status(404).json({
         database: PORT,
@@ -129,8 +140,8 @@ app.post("/reserve", cors(), async (req, res) => {
     }
 
     const startDate = new Date(requestData.startDate);
-    console.log("startdate: " + startDate);
 
+    // Ensuring the given date is valid
     if (isNaN(startDate.getTime())) {
       return res.status(400).json({
         database: PORT,
@@ -156,6 +167,7 @@ app.post("/reserve", cors(), async (req, res) => {
       }
     }
 
+    // Handling cases where the given date is invalid
     if (dayIndex === -1 || hourIndex === -1) {
       return res.status(404).json({
         database: PORT,
@@ -171,7 +183,9 @@ app.post("/reserve", cors(), async (req, res) => {
         success: false,
       });
     }
-
+    
+    // Setting the reservation status to true, indicating the date in the request
+    // is no longer available for others to reserve.
     await Contractor.updateOne(
       { _id: contractor._id },
       {
@@ -181,7 +195,7 @@ app.post("/reserve", cors(), async (req, res) => {
       }
     );
 
-    // Re fetch the contractor to confirm changes
+    // Re-fetch the contractor to confirm changes
     const confirm = await Contractor.findOne({ _id: contractor._id });
 
     return res.status(200).json({

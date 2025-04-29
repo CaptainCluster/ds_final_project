@@ -27,6 +27,8 @@ const handleReservation = async (urlData) => {
     backButton.textContent = "Return to home page";
     container.appendChild(backButton);
 
+    // Reserving the slot, with the consultant/contractor email address and 
+    // the start date as identifiers for the slot.
     const response = await fetch(`http://localhost:${SERVER_PORT}/reserve`, {
         method: "POST",
         headers: {

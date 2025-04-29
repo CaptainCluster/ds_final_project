@@ -18,11 +18,16 @@ const formatDateDay = (dateString) => {
 
 const formatDateHours = (dateString) => {
     const startDate = new Date(dateString);
-    const formattedDateString = `${startDate.getHours()}:00`;
+    
+    // Formatting (minus 3 due to timezone)
+    const formattedDateString = `${startDate.getHours()-3}:00`;
     return formattedDateString;
 }
 
 const fetchTimeSlots = async (consultEmail) => {
+
+    // Fetching the time slots the consultant has with their email address as
+    // an identifier
     const response = await fetch(`http://localhost:${SERVER_PORT}/fetch_data`, {
         method: "POST",
         headers: {
@@ -56,8 +61,8 @@ const fetchTimeSlots = async (consultEmail) => {
           dayEntry.textContent = formatDateDay(reservationDay[0].startDate)
         }
 
-
-
+        // Going through each day for which slots are available. Only slots
+        // that can be reserved will be displayed to the client.
         reservationDay.forEach(reservationSlot => {
             if (reservationSlot.reserved) {
                 return;

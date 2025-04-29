@@ -1,3 +1,13 @@
+/**
+ * Handler can be perceived as the entry point for clients, when it comes to 
+ * communicating with the system. It picks one of the multiple database nodes
+ * and sends a request to it with the client data. The response will then be 
+ * received by the handler, which will then send it to the client.
+ *
+ * Keep in mind that all the databases (multiple instances, one in each node)
+ * are updated and syncronized every time a time slot is reserved by a client.
+ */ 
+
 import express from "express";
 import cors from "cors";
 
@@ -5,10 +15,10 @@ import requestContractorData from "../utils/requestContractorData.js";
 import sendReservation from "../utils/sendReservation.js";
 import retryReservation from "../utils/retryReservation.js";
 import nodesCheckReservationSuccess from "../utils/nodesCheckReservationSuccess.js";
+import checkAvailableNodes from "../utils/checkAvailableNodes.js";
 
 const app = express();
 const port = 8000;
-
 const dbPorts = process.env.DB_PORTS
   ? process.env.DB_PORTS.split(",")
   : ["5173"];
@@ -21,11 +31,11 @@ app.use(cors());
 // Middleware to make parsing JSON requests easy
 app.use(express.json());
 
+
 /**
+ * @type GET
  * A route that helps understand whether the server
  * is online.
- *
- * @type GET
  */
 app.get("/test", (req, res) => {
   res.status(200).json({
@@ -34,7 +44,19 @@ app.get("/test", (req, res) => {
   });
 });
 
+/**
+ * @type GET
+ * A route for receiving the names and email addresses of every single 
+ * consultant in the database.
+ */ 
 app.get("/all", async (req, res) => {
+  if(!checkAvailableNodes(res, dbURLs, dbPorts)) {
+    return res.status(500).json({
+      error: "The server could not handle your request."
+  });
+}
+
+
   // Pick a random database and request the data
   const randomDbUrl = dbURLs[Math.floor(Math.random() * dbURLs.length)];
 
@@ -65,11 +87,16 @@ app.get("/all", async (req, res) => {
 });
 
 /**
- * A route for receiving contractor data
- *
  * @type POST
+ * A route for receiving contractor data
  */
 app.post("/fetch_data", (req, res) => {
+  if(!checkAvailableNodes(res, dbURLs, dbPorts)) {
+      return res.status(500).json({
+        error: "The server could not handle your request."
+    });
+  }
+
   if (!req.body?.data) {
     res.status(400).json({
       success: false,
@@ -84,11 +111,18 @@ app.post("/fetch_data", (req, res) => {
 });
 
 /**
- * A route for handling a reservation
- *
  * @type POST
+ * A route for handling a reservation. Once a successful reservation is made,
+ * the databases are syncronized.
  */
 app.post("/reserve", async (req, res) => {
+  if(!checkAvailableNodes(res, dbURLs, dbPorts)) {
+    return res.status(500).json({
+      error: "The server could not handle your request."
+  });
+}
+
+
   if (!req.body?.data) {
     res.status(400).json({
       success: false,
@@ -101,12 +135,13 @@ app.post("/reserve", async (req, res) => {
   const failedDbPorts = [];
   const successfulDbPorts = [];
 
+  // Sending the reservation to each of the nodes 
   const responses = await Promise.all(
     dbURLs.map((dbURL) => sendReservation(req.body.data, dbURL))
   );
 
   // Checking whether any changes were made to any of the db instances.
-  // If not, no sychronization is done.
+  // If not, an error has occurred and no updates have been made to the database.
   if (!nodesCheckReservationSuccess(responses)) {
     console.error("An error occurred when attempting to reserve a slot.");
     return res.status(400).json({
@@ -114,7 +149,8 @@ app.post("/reserve", async (req, res) => {
       msg: "Could not reserve a time slot."
     });
   }
-
+  
+  // Figuring out whether any databases encountered issues
   responses.forEach((r) => {
     if (r.data.success) {
       successfulDbPorts.push(r.data.database);
@@ -129,25 +165,36 @@ app.post("/reserve", async (req, res) => {
     }
   });
 
+  // Returning with success status if no database node issues occurred. 
+  // This indicates the data was successfully updated in all nodes.
   if (failedDbPorts.length === 0) {
+    console.log("A client successfully reserved a time slot.");
     return res.status(200).json({
       success: true,
       msg: "Updated the reservation to all databases successfully.",
     });
   }
-  
+ 
+  // Attempting to retry with the nodes where updates failed
   const retryResults = await Promise.all(
     failedDbPorts.map((port) => retryReservation(port, req.body.data))
   );
-
+  
+  // Figuring out whether 2nd attempt was successful.  
   retryResults.forEach(({ success, port }) => {
     if (success) {
       successfulDbPorts.push(port);
     } else {
-      console.log("Port " + port + " failed even after retrying.");
+
+      // In order to prevent conflicts and issues, the desyncronized node 
+      // (port & url) is removed from db arrays, meaning it is no longer used.
+      dbURLs.splice(dbPorts.indexOf(port), 1);
+      dbPorts.splice(dbPorts.indexOf(port), 1);
+      console.error("Port " + port + " failed even after retrying. The node is no longer used.");
     }
   });
-
+  
+  // Handling the worst-case scenario: some databases are not syncronized
   if (successfulDbPorts.length !== process.env.DB_PORTS.length) {
     return res.status(207).json({
       success: false,
@@ -155,6 +202,7 @@ app.post("/reserve", async (req, res) => {
     });
   } 
 
+  console.log("A client successfully reserved a time slot.");
   res.status(200).json({
     success: true,
     msg: "Updated the reservation to all databases successfully.",

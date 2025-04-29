@@ -1,4 +1,4 @@
-const HANDLER_PORT = 8000;
+const SERVER_PORT = 8000;
 
 /**
  * @TODO Implement this, if necessary
@@ -7,7 +7,9 @@ const HANDLER_PORT = 8000;
  * to a node within the system.
  */ 
 const fetchConsultantByName = async () => {
-  const response = await fetch(`http://localhost:${HANDLER_PORT}/all`, {
+  // Sending a request so that the consultant/contractor names 
+  // and email addresses can be received
+  const response = await fetch(`http://localhost:${SERVER_PORT}/all`, {
     method: "GET",
     headers: {
         "content-type": "application/json",
@@ -42,9 +44,7 @@ const fetchConsultantByName = async () => {
     entry.appendChild(emailP);
     entry.appendChild(reserveButton);
 
-    container.appendChild(
-      entry
-    );
+    container.appendChild(entry);
   });
 }
 
