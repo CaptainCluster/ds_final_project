@@ -163,6 +163,11 @@ app.post("/reserve", async (req, res) => {
     if (success) {
       successfulDbPorts.push(port);
     } else {
+
+      // In order to prevent conflicts and issues, the desyncronized node 
+      // (port & url) is removed from db arrays, meaning it is no longer used.
+      dbURLs.splice(dbPorts.indexOf(port), 1);
+      dbPorts.splice(dbPorts.indexOf(port), 1);
       console.log("Port " + port + " failed even after retrying.");
     }
   });
