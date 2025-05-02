@@ -20,6 +20,11 @@ Running the system
 The client-side runs via HTML+JS. The _serve_ package is one 
 way to make it run, on port 3000 by default.
 
+> cd src/frontend
+> npm i
+> npm i -G serve
+> serve 
+
 In order to run the back-end system, you need to make the
 nodes that form the system run in their own ports. For 
 instance, the handler runs on port 8000. Before the system
@@ -28,8 +33,8 @@ the background.
 
 For each node, run the following:
 
+> cd src/backend
 > npm i
-
 > npm run start
 
 The first command installs each of the dependencies. The 
