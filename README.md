@@ -22,8 +22,6 @@ way to make it run, on port 3000 by default.
 
 > cd src/frontend
 >
-> npm i
-> 
 > npm i -G serve
 > 
 > serve 
