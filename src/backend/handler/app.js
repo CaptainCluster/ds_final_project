@@ -171,7 +171,7 @@ app.post("/reserve", async (req, res) => {
     console.log("A client successfully reserved a time slot.");
     return res.status(200).json({
       success: true,
-      msg: "Updated the reservation to all databases successfully.",
+      msg: "Reservation fuccessful.",
     });
   }
  
@@ -205,7 +205,7 @@ app.post("/reserve", async (req, res) => {
   console.log("A client successfully reserved a time slot.");
   res.status(200).json({
     success: true,
-    msg: "Updated the reservation to all databases successfully.",
+    msg: "Reservation successful.",
   });
 });
 
